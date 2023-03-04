@@ -3,7 +3,7 @@
   "description": "this is composer demo",
   "type": "library",
   "license": "MIT",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "laravelModel\\": "laravelModel"
