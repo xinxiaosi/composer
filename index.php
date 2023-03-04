@@ -1,4 +1,7 @@
 <?php
 
-$a = new \laravelModel\xinModel();
-echo $a->index();
+include "vendor/autoload.php";
+
+$model =  new \laravelModel\XinModel();
+
+echo $model->getCurrentStoreId();
