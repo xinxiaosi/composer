@@ -1,11 +1,11 @@
 {
   "name": "xinxiaosi/composer",
-  "license": "MIT",
   "type": "project",
+  "description": "The Laravel model.",
+  "license": "MIT",
   "autoload": {
     "psr-4": {
-      "laravelModel\\": "laravelModel",
-      "core\\": "core"
+      "laravelModel\\": "laravelModel"
     }
   },
   "authors": [
