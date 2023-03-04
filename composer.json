@@ -1,7 +1,7 @@
 {
   "name": "xinxiaosi/composer",
-  "type": "project",
-  "description": "The Laravel model.",
+  "description": "this is composer demo",
+  "type": "library",
   "license": "MIT",
   "minimum-stability": "dev",
   "autoload": {
