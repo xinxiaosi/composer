@@ -2,6 +2,7 @@
 
 namespace laravelModel;
 
+use App\Exceptions\ApiException;
 use laravelModel\Relations\HasManyFromStr;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -191,12 +192,17 @@ class XinModel extends Model
      * 获取详情
      * @param $where
      * @param string $field
-     * @return Builder|Model|object
+     * @return array
      * @throws ApiException
      */
-    public function getInfo($where, string $field = '*')
+    public function getInfo($where, string $field = '*'): array
     {
-        return $this->handleCondition($where)->select($field)->first();
+        $info = $this->handleCondition($where)->select($field)->first();
+        if (empty($info)) {
+            throw new ApiException(ERROR_DATA_NOT_EXISTS);
+        }
+
+        return $info->toArray();
     }
 
     /**
@@ -225,7 +231,7 @@ class XinModel extends Model
      * @return array
      * @throws ApiException
      */
-    public function editItem($where, $data)
+    public function editItem($where, $data): array
     {
         if ($where == [] || $data == [])
             throw new ApiException(ApiException::ERROR_DATA_NOT_EXISTS);
@@ -241,14 +247,15 @@ class XinModel extends Model
 
     /**
      * 添加
-     * @param $data
-     * @param $boolean
+     * @param array $data
+     * @param boolean $boolean
      * @return mixed
      */
-    public function addItem($data, $boolean = false)
+    public function addItem(array $data, $boolean = false): mixed
     {
         if ($boolean) {
-            $data = $this->setUserInfo($data);
+            $data['create_user'] = $this->getCurrentUser();
+            $data['create_user_uid'] = $this->getCurrentUserId();
         }
 
         return $this->create($data);
@@ -258,10 +265,10 @@ class XinModel extends Model
      * 删除
      * @param $data
      * @param $column
-     * @return array|string
+     * @return string
      * @throws ApiException
      */
-    public function deleteItem($data, $column = 'id')
+    public function deleteItem($data, $column = 'id'): string
     {
         if (is_array($data)) {
             $ids = $data;
@@ -277,17 +284,19 @@ class XinModel extends Model
     /**
      * 软删除
      * @param $ids
-     * @param $column
-     * @param $update
-     * @return mixed
+     * @param string $column
+     * @param array $update
+     * @return array
      */
-    public function softDelete($ids, $column = 'id', $update = ['is_delete' => 1])
+    public function softDelete($ids, $column = 'id', $update = ['is_delete' => 1]): array
     {
         if (is_string($ids)) {
             $ids = explode(',', $ids);
         }
 
-        return $this->whereIn($column, $ids)->update($update);
+        $this->whereIn($column, $ids)->update($update);
+
+        return [];
     }
 
     /**
@@ -296,7 +305,7 @@ class XinModel extends Model
      * @param $where
      * @return mixed
      */
-    public function upsert($data, $where)
+    public function upsert($data, $where): mixed
     {
         $find = $this->handleCondition($where)->first();
         if (is_null($find))
@@ -310,7 +319,7 @@ class XinModel extends Model
      * @param $data
      * @return array
      */
-    public function updateOrCreateTable($data)
+    public function updateOrCreateTable($data): array
     {
         foreach ($data as $k => $v) {
             if (isset($v['id'])) {
@@ -328,7 +337,7 @@ class XinModel extends Model
      * 获取完整的表名
      * @return string
      */
-    public function getTableRaw()
+    public function getTableRaw(): string
     {
         return $this->getConnection()->getTablePrefix() . $this->getTable();
     }
@@ -338,7 +347,7 @@ class XinModel extends Model
      *
      * @return string
      */
-    public function getTable()
+    public function getTable(): string
     {
         if (!isset($this->table)) {
             return str_replace(
@@ -440,7 +449,7 @@ class XinModel extends Model
      * @param $update_before
      * @return string
      */
-    public function updateData($update, $update_before)
+    public function updateData($update, $update_before): string
     {
         $result = [];
         foreach ($update as $k => $v) {
@@ -461,13 +470,13 @@ class XinModel extends Model
     /**
      * 新建一对多关联 1=>(1,2,3)
      *
-     * @param        $related
+     * @param $related
      * @param null $foreignKey
      * @param null $localKey
      * @param string $separator
      * @return HasManyFromStr
      */
-    public function hasManyFromStr($related, $foreignKey = null, $localKey = null, $separator = ',')
+    public function hasManyFromStr($related, $foreignKey = null, $localKey = null, $separator = ','): HasManyFromStr
     {
         $instance = $this->newRelatedInstance($related);
 
@@ -489,7 +498,7 @@ class XinModel extends Model
      * @param string $separator
      * @return HasManyFromStr
      */
-    protected function newHasManyFromStr(Builder $query, Model $parent, $foreignKey, $localKey, $separator = ',')
+    protected function newHasManyFromStr(Builder $query, Model $parent, $foreignKey, $localKey, $separator = ','): HasManyFromStr
     {
         return new HasManyFromStr($query, $parent, $foreignKey, $localKey, $separator);
     }
