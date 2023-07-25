@@ -2,7 +2,7 @@
 
 namespace laravelModel;
 
-use App\Exceptions\ApiException;
+use laravelModel\ApiException;
 use laravelModel\Relations\HasManyFromStr;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
@@ -199,7 +199,7 @@ class XinModel extends Model
     {
         $info = $this->handleCondition($where)->select($field)->first();
         if (empty($info)) {
-            throw new ApiException(ERROR_DATA_NOT_EXISTS);
+            throw new ApiException(ApiException::ERROR_DATA_NOT_EXISTS);
         }
 
         return $info->toArray();
